@@ -1,13 +1,21 @@
-<!-- This component displays an authentication dialog overlay. 
-     It uses the injected authDialogState to determine whether to show the dialog.
-     When shown, the dialog contains a warning message that authentication has not been implemented yet, along with a button to close the dialog. 
--->
 
+
+<!-- This component displays authentication dialogs using AWS Amplify -->
 <script setup lang="ts">
 import { DialogState } from '@/types/DialogState';
-import { inject, computed } from 'vue';
+import { inject } from 'vue';
 import { useAuthStore } from '@/store/auth';
+import { signOut } from 'aws-amplify/auth';
 
+import { Authenticator } from "@aws-amplify/ui-vue";
+import "@aws-amplify/ui-vue/styles.css";
+
+import { Amplify } from 'aws-amplify';
+import awsconfig from '../aws-exports';
+
+Amplify.configure(awsconfig);
+
+// Inject dialog state from context
 const authDialogSignOutState = inject<DialogState>('authDialogSignOutState', { showDialog: false });
 const authDialogSignInState = inject<DialogState>('authDialogSignInState', { showDialog: false });
 
@@ -18,39 +26,51 @@ function closeDialog() {
     authDialogSignInState.showDialog = false;
 }
 
-function signIn() {
-    authStore.userAuthenticated = true;
-    authDialogSignInState.showDialog = false;
-}
-
 function signOutUser() {
+    signOut();
     authStore.userAuthenticated = false;
     authDialogSignOutState.showDialog = false;
 }
 </script>
 
 <template>
-    <v-dialog v-model="authDialogSignInState.showDialog" width="unset" transition="dialog-top-transition">
-        <v-card title="Sign In" color="warning">
-            <v-card-text>
-                This has not been implemented yet, so just click "Sign In" below!
-            </v-card-text>
-            <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn text="Sign In" @click="signIn"></v-btn>
-                <v-btn text="Close" @click="closeDialog"></v-btn>
-            </v-card-actions>
-        </v-card>
+    <!-- Sign In Dialog using Authenticator -->
+    <v-dialog
+        v-model="authDialogSignInState.showDialog"
+        width="unset"
+        transition="dialog-top-transition"
+        persistent
+    >
+        <authenticator>
+            <template v-slot="{ signOut, user }">
+                <v-card title="Welcome" color="primary" class="pa-4">
+                    <v-card-text>
+                        Hello, <strong>{{ user.username }}</strong>!<br />
+                        You have successfully signed in.
+                    </v-card-text>
+                    <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn text="Continue" @click="closeDialog" color="white" variant="flat" />
+                    </v-card-actions>
+                </v-card>
+            </template>
+        </authenticator>
     </v-dialog>
-    <v-dialog v-model="authDialogSignOutState.showDialog" width="unset" transition="dialog-top-transition">
+
+    <!-- Sign Out Dialog -->
+    <v-dialog
+        v-model="authDialogSignOutState.showDialog"
+        width="unset"
+        transition="dialog-top-transition"
+    >
         <v-card title="Sign Out?" color="warning">
             <v-card-text>
                 Are you sure you want to sign out?
             </v-card-text>
             <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn text="Sign Out" @click="signOutUser"></v-btn>
-                <v-btn text="Cancel" @click="closeDialog"></v-btn>
+                <v-btn text="Sign Out" @click="signOutUser" />
+                <v-btn text="Cancel" @click="closeDialog" />
             </v-card-actions>
         </v-card>
     </v-dialog>

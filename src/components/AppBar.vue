@@ -33,6 +33,9 @@ function toggleAboutApp() {
 
 const auth = useAuthStore();
 const userSignedIn = computed(() => auth.userAuthenticated);
+onMounted(() => {
+    auth.checkPreviousUserSignedIn(); 
+});
 
 // auth Dialog
 const authDialogSignOutState: DialogState = reactive({ showDialog: false });

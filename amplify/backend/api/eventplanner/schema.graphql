@@ -1,0 +1,28 @@
+input AMPLIFY { globalAuthRule: AuthRule = { allow: public } }
+
+type Booking {
+  datetime_start: AWSDateTime!
+  datetime_end: AWSDateTime!
+}
+
+type Room @model
+  @auth(rules: [{ allow: public, operations: [create, read, delete] }]) {
+  id: ID!
+  name: String!
+  capacity: Int!
+  bookings: [Booking]!
+}
+
+type Event @model @auth(rules: [{ allow: public, operations: [create, read, update, delete] }]) {
+  id: ID!
+  name: String!
+  description: String!
+  event_owner: String!
+  room_id: String!
+  image_file_name: String!
+  event_datetime_start: AWSDateTime!
+  event_datetime_end: AWSDateTime!
+  event_duration: Int!
+  total_tickets: Int!
+  tickets: [String!]!
+}
